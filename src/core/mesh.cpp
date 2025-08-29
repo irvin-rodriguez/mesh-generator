@@ -650,7 +650,7 @@ void Mesh::performTriangulation(bool ifDelauney) {
 
   // Begin assempbling remaining nodes
   int elem_id_count = 4;
-  for (std::vector<Node>::iterator it_node = nodes.begin() + 5; it_node != nodes.begin() + 88;
+  for (std::vector<Node>::iterator it_node = nodes.begin() + 5; it_node != nodes.end();
        ++it_node) {
     // For every element in the mesh, check if the node we are inserting falls inside of it, if so store it
     std::vector<Triangle *> interestElements;

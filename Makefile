@@ -1,43 +1,89 @@
-CPPFLAGS=-Wall -Werror -pedantic -std=gnu++98 -ggdb3
-RMOBJS=$(filter-out $(PROVIDED_OBJS), $(wildcard *.o))
+# Compiler settings
+CXX = g++
+CXXFLAGS = -Wall -Werror -pedantic -std=gnu++98 -ggdb3
 
-all: mesh-step1 mesh-step2 mesh-step3 mesh-step4
-	@echo "Built mesh-step1, mesh-step2, mesh-step3, and mesh-step4"
+# Directories
+SRC_DIR = src
+CORE_DIR = $(SRC_DIR)/core
+BUILD_DIR = build
+TEST_DIR = tests
 
-mesh-step1: mesh-step1.o mesh.o triangle.o
-	g++ -o $@ $^
+# Source files
+CORE_SRCS = $(CORE_DIR)/mesh.cpp $(CORE_DIR)/triangle.cpp
+MAIN_SRC = $(SRC_DIR)/main.cpp
+SRCS = $(CORE_SRCS) $(MAIN_SRC)
 
-mesh-step2: mesh-step2.o mesh.o triangle.o
-	g++ -o $@ $^
+# Object files (in build directory)
+CORE_OBJS = $(BUILD_DIR)/mesh.o $(BUILD_DIR)/triangle.o
+MAIN_OBJ = $(BUILD_DIR)/main.o
+OBJS = $(CORE_OBJS) $(MAIN_OBJ)
 
-mesh-step3: mesh-step3.o mesh.o triangle.o
-	g++ -o $@ $^
+# Target executable
+TARGET = $(BUILD_DIR)/mesh-generator
 
-mesh-step4: mesh-step4.o mesh.o triangle.o
-	g++ -o $@ $^
+# Default target
+all: $(TARGET)
 
-mesh-step1.o: mesh-step1.cpp mesh.hpp node.hpp triangle.hpp
-	g++ $(CPPFLAGS) -c $<
+# Main executable
+$(TARGET): $(OBJS) | $(BUILD_DIR)
+	$(CXX) -o $@ $^
 
-mesh-step2.o: mesh-step2.cpp mesh.hpp node.hpp triangle.hpp
-	g++ $(CPPFLAGS) -c $<
+# Object file rules
+$(BUILD_DIR)/main.o: $(MAIN_SRC) $(CORE_DIR)/mesh.hpp $(CORE_DIR)/node.hpp $(CORE_DIR)/triangle.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-mesh-step3.o: mesh-step3.cpp mesh.hpp node.hpp triangle.hpp
-	g++ $(CPPFLAGS) -c $<
+$(BUILD_DIR)/mesh.o: $(CORE_DIR)/mesh.cpp $(CORE_DIR)/mesh.hpp $(CORE_DIR)/triangle.hpp $(CORE_DIR)/node.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-mesh-step4.o: mesh-step4.cpp mesh.hpp node.hpp triangle.hpp
-	g++ $(CPPFLAGS) -c $<
+$(BUILD_DIR)/triangle.o: $(CORE_DIR)/triangle.cpp $(CORE_DIR)/triangle.hpp $(CORE_DIR)/node.hpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-mesh.o: mesh.cpp mesh.hpp triangle.hpp node.hpp
-	g++ $(CPPFLAGS) -c $<
+# Create build directory
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-triangle.o: triangle.cpp triangle.hpp node.hpp
-	g++ $(CPPFLAGS) -c $<
+# Test targets
+test: $(TARGET)
+	@echo "Running test with input2.txt:"
+	@./$(TARGET) --step1 $(TEST_DIR)/testcases/input2.txt
 
-.PHONY: clean format
+test-all: $(TARGET)
+	@echo "Testing all steps with input2.txt:"
+	@echo "Step 1:"
+	@./$(TARGET) --step1 $(TEST_DIR)/testcases/input2.txt
+	@echo -e "\nStep 2:"
+	@./$(TARGET) --step2 $(TEST_DIR)/testcases/input2.txt
+	@echo -e "\nStep 3:"
+	@./$(TARGET) --step3 $(TEST_DIR)/testcases/input2.txt
+	@echo -e "\nStep 4:"
+	@./$(TARGET) --step4 $(TEST_DIR)/testcases/input2.txt
 
+# Install target (copy to root for backward compatibility)
+install: $(TARGET)
+	cp $(TARGET) ./mesh-generator
+
+# Clean targets
 clean:
-	rm -f $(RMOBJS) *~ mesh-step1 mesh-step2 mesh-step3 mesh-step4
+	rm -rf $(BUILD_DIR)
+	rm -f mesh-generator
 
+clean-all: clean
+	rm -f mesh-step* *.o *~
+
+# Format code
 format:
-	clang-format -i *.cpp *.hpp
+	clang-format -i $(SRC_DIR)/*.cpp $(CORE_DIR)/*.cpp $(CORE_DIR)/*.hpp
+
+# Help target
+help:
+	@echo "Available targets:"
+	@echo "  all        - Build the mesh generator (default)"
+	@echo "  test       - Run basic test with step1"
+	@echo "  test-all   - Run tests for all steps"
+	@echo "  install    - Copy executable to root directory"
+	@echo "  clean      - Remove build directory"
+	@echo "  clean-all  - Remove all generated files"
+	@echo "  format     - Format source code with clang-format"
+	@echo "  help       - Show this help message"
+
+.PHONY: all test test-all install clean clean-all format help

@@ -6,7 +6,7 @@ CXXFLAGS = -Wall -Werror -pedantic -std=gnu++98 -ggdb3
 SRC_DIR = src
 CORE_DIR = $(SRC_DIR)/core
 BUILD_DIR = build
-TEST_DIR = tests
+INPUT_DIR = inputs
 
 # Source files
 CORE_SRCS = $(CORE_DIR)/mesh.cpp $(CORE_DIR)/triangle.cpp
@@ -44,19 +44,19 @@ $(BUILD_DIR):
 
 # Test targets
 test: $(TARGET)
-	@echo "Running test with input2.txt:"
-	@./$(TARGET) --step1 $(TEST_DIR)/testcases/input2.txt
+	@echo "Running test with simple-mesh.txt:"
+	@./$(TARGET) --step1 $(INPUT_DIR)/simple-mesh.txt
 
 test-all: $(TARGET)
-	@echo "Testing all steps with input2.txt:"
+	@echo "Testing all steps with simple-mesh.txt:"
 	@echo "Step 1:"
-	@./$(TARGET) --step1 $(TEST_DIR)/testcases/input2.txt
+	@./$(TARGET) --step1 $(INPUT_DIR)/simple-mesh.txt
 	@echo -e "\nStep 2:"
-	@./$(TARGET) --step2 $(TEST_DIR)/testcases/input2.txt
+	@./$(TARGET) --step2 $(INPUT_DIR)/simple-mesh.txt
 	@echo -e "\nStep 3:"
-	@./$(TARGET) --step3 $(TEST_DIR)/testcases/input2.txt
+	@./$(TARGET) --step3 $(INPUT_DIR)/simple-mesh.txt
 	@echo -e "\nStep 4:"
-	@./$(TARGET) --step4 $(TEST_DIR)/testcases/input2.txt
+	@./$(TARGET) --step4 $(INPUT_DIR)/simple-mesh.txt
 
 # Install target (copy to root for backward compatibility)
 install: $(TARGET)
